@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: .docker/php-fpm/Dockerfile
+    volumes:
+      - ./:/app
+    networks:
+      - laravel
+    depends_on:
+      - db
+
+  nginx:
+    build:
+      context: .
+      dockerfile: .docker/nginx/Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - "800:80"
+    depends_on:
+      - php
+    networks:
+      - laravel
+
+  db:
+    container_name: mysql
+    image: mysql
+    volumes:
+      - .docker/db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 3306:3306
+    networks:
+      - laravel
+
+networks:
+  laravel:
+    driver: bridge
